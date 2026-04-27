@@ -173,7 +173,7 @@ export default function App() {
               <Code className="text-slate-950 w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">GoMaster</h1>
+              <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">GoMaster By Emmanuel</h1>
               <div className="flex items-center gap-1 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
                 <Trophy className="w-3 h-3 text-amber-500" />
                 <span>{progress.xp} XP • Level {Math.floor(progress.xp / 500) + 1}</span>
