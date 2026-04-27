@@ -54,6 +54,7 @@ export default function App() {
   const [mode, setMode] = useState<Mode>('learn');
   const [searchQuery, setSearchQuery] = useState("");
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [progress, setProgress] = useState<Progress>(() => {
     const saved = localStorage.getItem('gofunc_progress');
     if (saved) {
@@ -164,21 +165,47 @@ export default function App() {
   const levels = [1, 2, 3, 4, 6];
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-200 font-sans overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-80 border-r border-slate-800 flex flex-col bg-slate-900/50">
+    <div className="flex flex-col lg:flex-row h-screen bg-slate-950 text-slate-200 font-sans overflow-hidden">
+      {/* Mobile Header Overlay */}
+      <div className="lg:hidden h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 shrink-0 z-40">
+        <div className="flex items-center gap-2">
+           <div className="h-6 w-6 rounded bg-cyan-500 flex items-center justify-center">
+              <Code className="text-slate-950 w-4 h-4" />
+           </div>
+           <span className="font-bold text-sm">GoMaster</span>
+        </div>
+        <button 
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="p-2 hover:bg-slate-800 rounded-lg text-slate-400 hover:text-white transition-colors"
+        >
+          {mobileMenuOpen ? <RefreshCw className="w-5 h-5 rotate-45" /> : <Terminal className="w-5 h-5" />}
+        </button>
+      </div>
+
+      {/* Sidebar - Desktop and Mobile Overlay */}
+      <aside className={`
+        fixed inset-0 z-50 lg:relative lg:z-0
+        w-80 border-r border-slate-800 flex flex-col bg-slate-900/95 lg:bg-slate-900/50
+        transition-transform duration-300 ease-in-out
+        ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+      `}>
         <div className="p-6 border-b border-slate-800">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="h-8 w-8 rounded-lg bg-cyan-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
-              <Code className="text-slate-950 w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">GoMaster By Emmanuel</h1>
-              <div className="flex items-center gap-1 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                <Trophy className="w-3 h-3 text-amber-500" />
-                <span>{progress.xp} XP • Level {Math.floor(progress.xp / 500) + 1}</span>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-lg bg-cyan-500 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+                <Code className="text-slate-950 w-5 h-5" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">GoMaster</h1>
+                <div className="flex items-center gap-1 text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                  <Trophy className="w-3 h-3 text-amber-500" />
+                  <span>{progress.xp} XP</span>
+                </div>
               </div>
             </div>
+            <button className="lg:hidden p-1 text-slate-500" onClick={() => setMobileMenuOpen(false)}>
+              <ArrowLeft className="w-5 h-5" />
+            </button>
           </div>
           
           <div className="relative">
@@ -196,7 +223,7 @@ export default function App() {
         <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-6 space-y-8">
           <div className="px-2 mb-4">
             <button 
-              onClick={() => setShowLeaderboard(!showLeaderboard)}
+              onClick={() => { setShowLeaderboard(!showLeaderboard); setMobileMenuOpen(false); }}
               className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-cyan-500/50 transition-all text-xs font-bold uppercase tracking-widest text-slate-400"
             >
               <span className="flex items-center gap-2"><Trophy className="w-4 h-4 text-amber-500" /> Leaderboard</span>
@@ -216,7 +243,7 @@ export default function App() {
             return (
               <div key={lvl}>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-3 ml-2 flex justify-between items-center pr-2">
-                  <span>Level {lvl} • {lvl === 1 ? 'Basics' : lvl === 2 ? 'Logic' : 'Advanced'}</span>
+                  <span>Level {lvl}</span>
                   {progress.badges.includes(`Level ${lvl} Master`) && <Star className="w-3 h-3 text-amber-500 fill-amber-500" />}
                 </p>
                 <div className="space-y-1">
@@ -229,7 +256,7 @@ export default function App() {
                     return (
                       <button
                         key={name}
-                        onClick={() => setSelectedFuncId(name)}
+                        onClick={() => { setSelectedFuncId(name); setMobileMenuOpen(false); }}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-md text-sm transition-all group ${
                           isSelected 
                             ? "bg-slate-800 text-white font-medium shadow-sm" 
@@ -243,7 +270,7 @@ export default function App() {
                         {isComplete ? (
                           <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                         ) : partiallyComplete ? (
-                          <span className="text-[10px] px-1.5 py-0.5 rounded border border-cyan-500/30 text-cyan-400 bg-cyan-500/5">{Math.round((modeSet.size / 3) * 100)}%</span>
+                          <span className="text-[10px] px-1.5 py-0.5 rounded border border-cyan-500/30 text-cyan-400 bg-cyan-500/5">{modeSet.size}/3</span>
                         ) : null}
                       </button>
                     );
@@ -255,25 +282,14 @@ export default function App() {
         </div>
 
         <div className="p-4 border-t border-slate-800/50 bg-slate-900/80">
-          <div className="mb-4">
-             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 px-1">Badges Earned</p>
-             <div className="flex flex-wrap gap-2">
-               {progress.badges.map(b => (
-                 <div key={b} title={b} className="w-8 h-8 rounded-full bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-500">
-                   <Trophy className="w-4 h-4" />
-                 </div>
-               ))}
-               {progress.badges.length === 0 && <span className="text-[10px] text-slate-600 italic">No badges yet...</span>}
-             </div>
-          </div>
           <div className="bg-slate-800/50 rounded-xl p-4 border border-slate-700/50">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mastery Level</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Mastery</span>
               <span className="text-[10px] text-cyan-400 font-mono">{progress.xp} XP</span>
             </div>
             <div className="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
               <div 
-                className="bg-cyan-500 h-full transition-all duration-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]" 
+                className="bg-cyan-500 h-full transition-all duration-500" 
                 style={{ width: `${(progress.xp % 500) / 5}%` }}
               ></div>
             </div>
@@ -282,19 +298,19 @@ export default function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col relative overflow-hidden">
+      <main className="flex-1 flex flex-col relative overflow-hidden bg-slate-950">
         {showLeaderboard && (
-          <div className="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-12">
-            <div className="max-w-2xl w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-              <div className="p-8 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
-                <h3 className="text-3xl font-black tracking-tighter flex items-center gap-3">
-                  <Trophy className="text-amber-500 w-8 h-8" /> Leaderboard
+          <div className="absolute inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-12">
+            <div className="max-w-2xl w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]">
+              <div className="p-4 sm:p-8 border-b border-slate-800 flex justify-between items-center bg-slate-900/50">
+                <h3 className="text-xl sm:text-3xl font-black tracking-tighter flex items-center gap-2 sm:gap-3">
+                  <Trophy className="text-amber-500 w-6 h-6 sm:w-8 sm:h-8" /> Leaderboard
                 </h3>
-                <button onClick={() => setShowLeaderboard(false)} className="p-2 hover:bg-slate-800 rounded-lg text-slate-500 hover:text-white transition-colors">
-                  <RefreshCw className="w-6 h-6 rotate-45" />
+                <button onClick={() => setShowLeaderboard(false)} className="p-1 sm:p-2 hover:bg-slate-800 rounded-lg text-slate-500 hover:text-white transition-colors">
+                  <RefreshCw className="w-5 h-5 sm:w-6 sm:h-6 rotate-45" />
                 </button>
               </div>
-              <div className="flex-1 p-8 overflow-y-auto custom-scrollbar space-y-4">
+              <div className="flex-1 p-4 sm:p-8 overflow-y-auto custom-scrollbar space-y-3 sm:space-y-4">
                 {[
                   { name: "You", xp: progress.xp, current: true, rank: 1 },
                   { name: "PixelWizard", xp: 12400, rank: 2 },
@@ -302,15 +318,15 @@ export default function App() {
                   { name: "CodeCrasher", xp: 8200, rank: 4 },
                   { name: "SliceMaster", xp: 5100, rank: 5 },
                 ].sort((a,b) => b.xp - a.xp).map((u, i) => (
-                  <div key={u.name} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${u.current ? 'bg-cyan-500/10 border-cyan-500/50 scale-105 shadow-lg' : 'bg-slate-800/50 border-slate-700'}`}>
-                    <div className="flex items-center gap-4">
-                      <span className={`text-lg font-black w-8 text-center ${i === 0 ? 'text-amber-500' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-amber-800' : 'text-slate-600'}`}>{i + 1}</span>
-                      <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold">{u.name[0]}</div>
-                      <span className={`font-bold ${u.current ? 'text-cyan-400' : 'text-slate-200'}`}>{u.name}</span>
+                  <div key={u.name} className={`flex items-center justify-between p-3 sm:p-4 rounded-xl border transition-all ${u.current ? 'bg-cyan-500/10 border-cyan-500/50 scale-100 sm:scale-105 shadow-lg' : 'bg-slate-800/50 border-slate-700'}`}>
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <span className={`text-sm sm:text-lg font-black w-6 sm:w-8 text-center ${i === 0 ? 'text-amber-500' : i === 1 ? 'text-slate-400' : i === 2 ? 'text-amber-800' : 'text-slate-600'}`}>{i + 1}</span>
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-xs sm:text-base">{u.name[0]}</div>
+                      <span className={`font-bold text-xs sm:text-base ${u.current ? 'text-cyan-400' : 'text-slate-200'}`}>{u.name}</span>
                     </div>
                     <div className="text-right">
-                      <div className="text-sm font-black text-white">{u.xp} XP</div>
-                      <div className="text-[10px] text-slate-500 uppercase tracking-widest">Mastery Tier</div>
+                      <div className="text-xs sm:text-sm font-black text-white">{u.xp} XP</div>
+                      <div className="text-[8px] sm:text-[10px] text-slate-500 uppercase tracking-widest">Mastery</div>
                     </div>
                   </div>
                 ))}
@@ -320,35 +336,35 @@ export default function App() {
         )}
 
         {/* Header Tabs */}
-        <header className="h-16 flex items-center justify-between px-8 bg-slate-900 border-b border-slate-800 shrink-0">
-          <div className="flex items-center space-x-6">
-            <h2 className="text-lg font-semibold text-white tracking-tight">{selectedFunc.name}.go</h2>
-            <div className="flex bg-slate-800 p-1 rounded-lg">
+        <header className="h-16 flex flex-col sm:flex-row items-center justify-between px-4 sm:px-8 bg-slate-900 border-b border-slate-800 shrink-0">
+          <div className="flex items-center space-x-2 sm:space-x-6 w-full sm:w-auto mt-2 sm:mt-0">
+            <h2 className="text-sm sm:text-lg font-semibold text-white tracking-tight truncate max-w-[120px] sm:max-w-none">{selectedFunc.name}.go</h2>
+            <div className="flex bg-slate-800 p-1 rounded-lg overflow-x-auto no-scrollbar max-w-[200px] sm:max-w-none">
               <TabButton 
                 active={mode === 'learn'} 
                 onClick={() => setMode('learn')} 
-                icon={<BookOpen className="w-3.5 h-3.5" />}
+                icon={<BookOpen className="w-3 sm:w-3.5 h-3 sm:h-3.5" />}
                 label="Learn"
                 isDone={progress.completedModes[selectedFunc.id]?.has('learn')}
               />
               <TabButton 
                 active={mode === 'quiz'} 
                 onClick={() => setMode('quiz')} 
-                icon={<BrainCircuit className="w-3.5 h-3.5" />}
+                icon={<BrainCircuit className="w-3 sm:w-3.5 h-3 sm:h-3.5" />}
                 label="Quiz"
                 isDone={progress.completedModes[selectedFunc.id]?.has('quiz')}
               />
               <TabButton 
                 active={mode === 'playground'} 
                 onClick={() => setMode('playground')} 
-                icon={<Terminal className="w-3.5 h-3.5" />}
-                label="Playground"
+                icon={<Terminal className="w-3 sm:w-3.5 h-3 sm:h-3.5" />}
+                label="Lab"
                 isDone={progress.completedModes[selectedFunc.id]?.has('playground')}
               />
             </div>
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="hidden sm:flex items-center space-x-4">
             <div className="flex -space-x-2">
               {[1, 2, 3].map(i => {
                 const modeName = i === 1 ? 'learn' : i === 2 ? 'quiz' : 'playground';
@@ -407,15 +423,15 @@ function TabButton({ active, onClick, icon, label, isDone }: { active: boolean, 
   return (
     <button
       onClick={onClick}
-      className={`px-4 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
+      className={`px-3 sm:px-4 py-1 sm:py-1.5 rounded-md text-[10px] sm:text-xs font-medium transition-all flex items-center gap-1.5 sm:gap-2 shrink-0 ${
         active 
           ? "bg-slate-700 text-white shadow-sm" 
           : "text-slate-400 hover:text-white"
       }`}
     >
       {icon}
-      {label}
-      {isDone && <CheckCircle2 className="w-3 h-3 text-cyan-400" />}
+      <span className="hidden sm:inline-block whitespace-nowrap">{label}</span>
+      {isDone && <CheckCircle2 className="w-3 h-3 text-cyan-400 shrink-0" />}
     </button>
   );
 }
@@ -456,18 +472,18 @@ function LearnView({
   const currentSuggestions = userExplanations.filter(e => e.lineIndex === currentLine).sort((a,b) => b.votes - a.votes);
 
   return (
-    <div className="flex flex-1 overflow-hidden h-full">
+    <div className="flex flex-col xl:flex-row flex-1 overflow-hidden h-full">
       {/* Code Editor Panel */}
-      <div className="flex-1 bg-slate-950 p-6 font-mono text-sm leading-relaxed relative flex flex-col overflow-hidden">
-        <div className="absolute left-0 top-0 bottom-0 w-12 bg-slate-900/30 flex flex-col items-center pt-6 text-slate-600 select-none">
-          {func.goCode.map((_, i) => <span key={i}>{i+1}</span>)}
+      <div className="flex-1 bg-slate-950 p-4 sm:p-6 font-mono text-xs sm:text-sm leading-relaxed relative flex flex-col overflow-hidden border-b xl:border-b-0 xl:border-r border-slate-800">
+        <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-12 bg-slate-900/30 flex flex-col items-center pt-6 text-[10px] text-slate-600 select-none">
+          {func.goCode.map((_, i) => <span key={i} className="h-6 leading-6">{i+1}</span>)}
         </div>
-        <div className="pl-10 space-y-0.5 overflow-y-auto custom-scrollbar pr-4">
-          <div className="text-slate-500 mb-4">package main</div>
+        <div className="pl-6 sm:pl-10 space-y-0.5 overflow-y-auto custom-scrollbar pr-2 sm:pr-4">
+          <div className="text-slate-500 mb-2 sm:mb-4">package main</div>
           {func.goCode.map((line, i) => (
             <div 
               key={i} 
-              className={`pl-4 py-0.5 transition-colors border-l-2 ${i === currentLine ? "bg-cyan-500/10 border-cyan-400 text-white" : "border-transparent text-slate-400 opacity-50"}`}
+              className={`pl-2 sm:pl-4 py-0.5 transition-colors border-l-2 ${i === currentLine ? "bg-cyan-500/10 border-cyan-400 text-white font-medium" : "border-transparent text-slate-400 opacity-50"}`}
             >
               <pre className="whitespace-pre-wrap">{line}</pre>
             </div>
@@ -475,26 +491,26 @@ function LearnView({
         </div>
 
         {/* Step Indicator */}
-        <div className="absolute bottom-8 right-8">
-          <div className="flex items-center space-x-3 bg-slate-900 border border-slate-800 rounded-full pl-4 pr-1 py-1 shadow-2xl">
+        <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 z-10">
+          <div className="flex items-center space-x-2 sm:space-x-3 bg-slate-900/90 backdrop-blur border border-slate-800 rounded-full pl-3 pr-1 py-1 shadow-2xl">
             {currentLine === -1 ? (
-              <span className="text-[10px] font-bold text-cyan-500 uppercase tracking-widest">Goal: {func.name}</span>
+              <span className="text-[9px] sm:text-[10px] font-bold text-cyan-500 uppercase tracking-widest truncate max-w-[100px]">Goal: {func.name}</span>
             ) : (
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">STEP {currentLine + 1} OF {func.goCode.length}</span>
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">{currentLine + 1} / {func.goCode.length}</span>
             )}
             <div className="flex gap-1">
               <button 
                 onClick={handlePrev}
                 disabled={currentLine === -1}
-                className="bg-slate-800 hover:bg-slate-700 text-white disabled:opacity-30 p-1.5 rounded-full transition-all"
+                className="bg-slate-800 hover:bg-slate-700 text-white disabled:opacity-30 p-1 sm:p-1.5 rounded-full transition-all"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-3 sm:w-4 h-3 sm:h-4" />
               </button>
               <button 
                 onClick={handleNext}
-                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-1.5 rounded-full text-xs font-bold transition-all active:scale-95"
+                className="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold transition-all active:scale-95 whitespace-nowrap"
               >
-                {currentLine < func.goCode.length - 1 ? (currentLine === -1 ? 'Start Learning →' : 'Next Line →') : 'Complete Learn'}
+                {currentLine < func.goCode.length - 1 ? (currentLine === -1 ? 'Start →' : 'Next →') : 'Finish'}
               </button>
             </div>
           </div>
@@ -502,8 +518,8 @@ function LearnView({
       </div>
 
       {/* Explanation Panel */}
-      <div className="w-[420px] bg-slate-100 p-8 flex flex-col border-l border-slate-200">
-        <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
+      <div className="flex-[0.8] xl:w-[420px] bg-slate-100 p-4 sm:p-8 flex flex-col border-t sm:border-t-0 sm:border-l border-slate-200 lg:min-h-0 min-h-[300px]">
+        <div className="flex-1 overflow-y-auto custom-scrollbar pr-1 sm:pr-2">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center space-x-2">
               <span className="w-8 h-8 rounded-full bg-cyan-100 flex items-center justify-center text-lg">💡</span>
@@ -653,17 +669,17 @@ function QuizView({ func, onComplete }: { func: FunctionDefinition, onComplete: 
   };
 
   return (
-    <div className="flex flex-col gap-8 h-full max-w-5xl mx-auto p-12 overflow-hidden">
+    <div className="flex flex-col gap-4 sm:gap-8 h-full max-w-5xl mx-auto p-4 sm:p-12 overflow-hidden">
       <div className="text-center shrink-0">
-        <h3 className="text-3xl font-black mb-2 tracking-tighter text-white">Fill the Void</h3>
-        <p className="text-slate-500 italic">Complete the Go logic to prove your mastery.</p>
+        <h3 className="text-xl sm:text-3xl font-black mb-1 sm:mb-2 tracking-tighter text-white">Fill the Void</h3>
+        <p className="text-slate-500 italic text-[10px] sm:text-sm">Complete the Go logic to prove your mastery.</p>
       </div>
 
-      <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-8 font-mono text-sm leading-relaxed shadow-2xl overflow-y-auto custom-scrollbar flex-1 relative">
-        <div className="absolute left-0 top-0 bottom-0 w-12 bg-slate-900/10 flex flex-col items-center pt-8 text-slate-700 pointer-events-none">
-          {func.goCode.map((_, i) => <span key={i}>{i+1}</span>)}
+      <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-4 sm:p-8 font-mono text-xs sm:text-sm leading-relaxed shadow-2xl overflow-y-auto custom-scrollbar flex-1 relative">
+        <div className="absolute left-0 top-0 bottom-0 w-8 sm:w-12 bg-slate-900/10 flex flex-col items-center pt-8 text-[10px] text-slate-700 pointer-events-none">
+          {func.goCode.map((_, i) => <span key={i} className="h-6 leading-6">{i+1}</span>)}
         </div>
-        <div className="pl-10">
+        <div className="pl-6 sm:pl-10">
           {func.goCode.map((line, i) => {
             const isBlank = blankedIndices.includes(i);
             if (isBlank) {
@@ -671,43 +687,43 @@ function QuizView({ func, onComplete }: { func: FunctionDefinition, onComplete: 
               const isWrong = results[i] === false;
               
               return (
-                <div key={i} className="flex gap-4 py-1.5 items-center">
-                  <div className="flex-1 flex flex-col gap-2 relative">
-                    <div className="flex items-center gap-2">
+                <div key={i} className="flex gap-2 sm:gap-4 py-1.5 items-center">
+                  <div className="flex-1 flex flex-col gap-1 sm:gap-2 relative">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
                        <input
                         type="text"
                         value={answers[i] || ""}
                         onChange={(e) => setAnswers(prev => ({ ...prev, [i]: e.target.value }))}
                         disabled={submitted && isCorrect}
-                        className={`flex-1 bg-slate-950 border rounded px-3 py-1.5 outline-none transition-all font-mono text-sm ${
+                        className={`flex-1 bg-slate-950 border rounded px-2 sm:px-3 py-1 sm:py-1.5 outline-none transition-all font-mono text-[10px] sm:text-sm ${
                           submitted 
                             ? (isCorrect ? "border-emerald-500 text-emerald-400 bg-emerald-500/5" : "border-red-500 text-red-400 bg-red-500/5")
                             : "border-slate-800 focus:border-cyan-500 text-cyan-400"
                         }`}
-                        placeholder="// Implement missing logic"
+                        placeholder="// code..."
                       />
                       {!submitted && (
                         <button 
                           onClick={() => setActiveHintIndex(activeHintIndex === i ? -1 : i)}
-                          className={`p-1.5 rounded transition-all ${activeHintIndex === i ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 text-slate-500 hover:text-cyan-500'}`}
+                          className={`p-1 sm:p-1.5 rounded transition-all ${activeHintIndex === i ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 text-slate-500 hover:text-cyan-500'}`}
                         >
-                          <BrainCircuit className="w-4 h-4" />
+                          <BrainCircuit className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
                         </button>
                       )}
                     </div>
                     {activeHintIndex === i && (
                       <motion.div 
                         initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-                        className="absolute right-0 top-full mt-2 z-20 bg-cyan-900 border border-cyan-500/50 p-4 rounded-xl shadow-2xl text-[10px] text-cyan-100 max-w-[200px]"
+                        className="absolute right-0 top-full mt-2 z-20 bg-cyan-900 border border-cyan-500/50 p-3 sm:p-4 rounded-xl shadow-2xl text-[9px] sm:text-[10px] text-cyan-100 max-w-[150px] sm:max-w-[200px]"
                       >
-                         <p className="font-bold flex items-center gap-1 mb-1"><Info className="w-3 h-3" /> Clue:</p>
-                         {func.quizHints[blankedIndices.indexOf(i)] || "Think about the main logic of this function!"}
+                         <p className="font-bold flex items-center gap-1 mb-1"><Info className="w-3 h-3" /> Tip:</p>
+                         {func.quizHints[blankedIndices.indexOf(i)] || "Look at the patterns!"}
                       </motion.div>
                     )}
                     {submitted && isWrong && (
-                      <div className="text-[10px] text-slate-500 flex items-center gap-1.5 pl-1 opacity-80">
-                        <ChevronRight className="w-3 h-3" />
-                        Correct: <code className="text-slate-400">{func.goCode[i].trim()}</code>
+                      <div className="text-[9px] sm:text-[10px] text-slate-500 flex items-center gap-1 pl-1 opacity-80">
+                        <ChevronRight className="w-2.5 h-2.5" />
+                        Goal: <code className="text-slate-400">{func.goCode[i].trim()}</code>
                       </div>
                     )}
                   </div>
@@ -715,15 +731,15 @@ function QuizView({ func, onComplete }: { func: FunctionDefinition, onComplete: 
               );
             }
             return (
-              <div key={i} className="flex gap-4 py-1.5">
-                <pre className="whitespace-pre-wrap text-slate-400">{line}</pre>
+              <div key={i} className="flex gap-2 sm:gap-4 py-1 sm:py-1.5">
+                <pre className="whitespace-pre-wrap text-slate-400 text-[10px] sm:text-sm">{line}</pre>
               </div>
             );
           })}
         </div>
       </div>
 
-      <div className="flex justify-center gap-4 shrink-0 pb-4">
+      <div className="flex justify-center gap-3 sm:gap-4 shrink-0 pb-4 scale-90 sm:scale-100">
         <button
           onClick={() => {
              setAnswers({});
@@ -731,15 +747,15 @@ function QuizView({ func, onComplete }: { func: FunctionDefinition, onComplete: 
              setSubmitted(false);
              setActiveHintIndex(-1);
           }}
-          className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold flex items-center gap-2 transition-all border border-slate-700"
+          className="px-4 sm:px-6 py-2 sm:py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl font-bold flex items-center gap-2 transition-all border border-slate-700 text-sm"
         >
-          <RefreshCw className="w-5 h-5" /> Reset
+          <RefreshCw className="w-4 sm:w-5 h-4 sm:h-5" /> Reset
         </button>
         <button
           onClick={handleSubmit}
-          className="px-8 py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-2 transition-all active:scale-95"
+          className="px-6 sm:px-8 py-2 sm:py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 rounded-xl font-bold shadow-lg shadow-cyan-500/20 flex items-center gap-2 transition-all active:scale-95 text-sm"
         >
-          <Play className="w-5 h-5 fill-slate-950" /> Verify Implementation
+          <Play className="w-4 sm:w-5 h-4 sm:h-5 fill-slate-950" /> Verify
         </button>
       </div>
     </div>
@@ -818,58 +834,58 @@ function PlaygroundView({
   const topExamples = userExamples.sort((a,b) => b.votes - a.votes).slice(0, 5);
 
   return (
-    <div className="flex flex-1 overflow-hidden h-full">
-      <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-slate-950/20">
-        <div className="max-w-3xl mx-auto space-y-8">
+    <div className="flex flex-col lg:flex-row flex-1 overflow-hidden h-full">
+      <div className="flex-1 p-4 sm:p-8 overflow-y-auto custom-scrollbar bg-slate-950/20">
+        <div className="max-w-3xl mx-auto space-y-6 sm:space-y-8">
           {/* Code Editor Section */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
-            <div className="px-6 py-3 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+            <div className="px-4 sm:px-6 py-2 sm:py-3 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
               <div className="flex items-center gap-2">
-                <div className="flex gap-1.5 mr-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500/50"></div>
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/50"></div>
+                <div className="flex gap-1 mr-2">
+                  <div className="w-2 h-2 rounded-full bg-red-500/50"></div>
+                  <div className="w-2 h-2 rounded-full bg-amber-500/50"></div>
+                  <div className="w-2 h-2 rounded-full bg-emerald-500/50"></div>
                 </div>
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Scratchpad Editor</span>
+                <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Source Editor</span>
               </div>
               <div className="flex items-center gap-3">
                  <button 
                   onClick={() => setCustomCode(func.goCode.join('\n'))}
-                  className="text-[9px] font-bold text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest"
+                  className="text-[8px] sm:text-[9px] font-bold text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest"
                  >
-                   Reset Code
+                   Reset
                  </button>
               </div>
             </div>
-            <div className="p-1 min-h-[300px] relative">
+            <div className="p-1 min-h-[200px] sm:min-h-[300px] relative">
               <textarea
                 value={customCode}
                 onChange={(e) => setCustomCode(e.target.value)}
                 spellCheck={false}
-                className="w-full h-full min-h-[300px] bg-transparent text-cyan-400 font-mono text-sm p-6 outline-none resize-none leading-relaxed"
-                placeholder="// Write your Go function here..."
+                className="w-full h-full min-h-[200px] sm:min-h-[300px] bg-transparent text-cyan-400 font-mono text-[11px] sm:text-sm p-4 sm:p-6 outline-none resize-none leading-relaxed"
+                placeholder="// Go code here..."
               />
-              <div className="absolute top-0 left-0 w-12 h-full bg-slate-900/30 border-r border-slate-800 pointer-events-none flex flex-col items-center pt-6 text-[10px] font-mono text-slate-700">
-                {customCode.split('\n').map((_, i) => <span key={i} className="h-[22.4px] leading-relaxed">{i + 1}</span>)}
+              <div className="absolute top-0 left-0 w-8 sm:w-12 h-full bg-slate-900/30 border-r border-slate-800 pointer-events-none flex flex-col items-center pt-4 sm:pt-6 text-[9px] sm:text-[10px] font-mono text-slate-700">
+                {customCode.split('\n').map((_, i) => <span key={i} className="h-[17.6px] sm:h-[22.4px] leading-relaxed">{i + 1}</span>)}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-slate-900/80 rounded-2xl border border-slate-800 p-6 shadow-xl backdrop-blur-sm">
-              <h3 className="text-sm font-black mb-4 flex items-center justify-between text-white uppercase tracking-wider">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+            <div className="bg-slate-900/80 rounded-2xl border border-slate-800 p-4 sm:p-6 shadow-xl backdrop-blur-sm">
+              <h3 className="text-xs sm:text-sm font-black mb-4 flex items-center justify-between text-white uppercase tracking-wider">
                 <span className="flex items-center gap-2"><Terminal className="w-4 h-4 text-cyan-500" /> Inputs</span>
                 <button 
                   onClick={() => onSaveExample(args)}
-                  className="text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-1 rounded hover:bg-cyan-500/20 transition-all uppercase tracking-widest font-bold"
+                  className="text-[8px] sm:text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-2 py-1 rounded hover:bg-cyan-500/20 transition-all uppercase tracking-widest font-bold"
                 >
-                  Save Test
+                  Save
                 </button>
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {func.defaultArgs.map((_, i) => (
                   <div key={i}>
-                    <label className="block text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Arg {i + 1}</label>
+                    <label className="block text-[8px] sm:text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Arg {i + 1}</label>
                     <input
                       type="text"
                       value={args[i] || ""}
@@ -878,7 +894,7 @@ function PlaygroundView({
                         newArgs[i] = e.target.value;
                         setArgs(newArgs);
                       }}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-all font-mono text-cyan-400"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 sm:px-4 py-2 text-[10px] sm:text-xs focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-all font-mono text-cyan-400"
                       placeholder={`Value...`}
                     />
                   </div>
@@ -886,50 +902,50 @@ function PlaygroundView({
                 <button
                   onClick={runSimulation}
                   disabled={isRunning}
-                  className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-3 rounded-xl font-bold shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 py-2.5 sm:py-3 rounded-xl font-bold shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50 text-[11px] sm:text-sm"
                 >
                   {isRunning ? (
-                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <RefreshCw className="w-3.5 sm:w-4 h-3.5 sm:h-4 animate-spin" />
                   ) : (
-                    <Play className="w-4 h-4 fill-slate-950" />
+                    <Play className="w-3.5 sm:w-4 h-3.5 sm:h-4 fill-slate-950" />
                   )}
-                  {isRunning ? 'Calculating...' : 'Run Simulation'}
+                  {isRunning ? 'Running...' : 'Execute'}
                 </button>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between px-2">
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Community Hub</p>
+                <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest text-white/60">Community Hub</p>
                 <Trophy className="w-3 h-3 text-amber-500 opacity-50" />
               </div>
-              <div className="space-y-2 overflow-y-auto max-h-[220px] custom-scrollbar pr-1">
+              <div className="space-y-2 overflow-y-auto max-h-[180px] sm:max-h-[220px] custom-scrollbar pr-1">
                 {topExamples.map(ex => (
-                  <div key={ex.id} className="bg-slate-900/30 border border-slate-800 rounded-xl p-3 flex items-center justify-between group hover:bg-slate-800/50 transition-all">
+                  <div key={ex.id} className="bg-slate-900/30 border border-slate-800 rounded-xl p-2.5 sm:p-3 flex items-center justify-between group hover:bg-slate-800/50 transition-all">
                     <div className="flex flex-col gap-0.5">
                       <div className="flex gap-1.5">
                         {ex.args.map((a, i) => (
-                          <span key={i} className="text-[9px] font-mono text-slate-400 truncate max-w-[60px]">"{a}"</span>
+                          <span key={i} className="text-[8px] sm:text-[9px] font-mono text-slate-400 truncate max-w-[50px] sm:max-w-[60px]">"{a}"</span>
                         ))}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                       <button onClick={() => setArgs([...ex.args])} className="text-[8px] font-bold text-cyan-500 underline opacity-0 group-hover:opacity-100 transition-opacity">USE</button>
-                       <div className="flex items-center gap-1.5 grayscale group-hover:grayscale-0 transition-all">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                       <button onClick={() => setArgs([...ex.args])} className="text-[8px] font-bold text-cyan-500 underline opacity-0 group-hover:opacity-100 lg:opacity-100 transition-opacity">RUN</button>
+                       <div className="flex items-center gap-1 sm:gap-1.5 grayscale group-hover:grayscale-0 transition-all">
                           <button 
                             onClick={() => onVote(ex.id, 1)}
                             className={`p-1 rounded transition-all ${votedIds.has(ex.id) ? 'text-cyan-500' : 'text-slate-600 hover:text-cyan-500'}`}
                           >
-                            <Trophy className="w-3 h-3" />
+                            <Trophy className="w-2.5 sm:w-3 h-2.5 sm:h-3" />
                           </button>
-                          <span className="text-[10px] font-bold text-slate-500">{ex.votes}</span>
+                          <span className="text-[9px] sm:text-[10px] font-bold text-slate-500">{ex.votes}</span>
                        </div>
                     </div>
                   </div>
                 ))}
                 {topExamples.length === 0 && (
-                  <div className="text-center p-6 border border-dashed border-slate-800 rounded-xl text-slate-600 text-[10px] italic">
-                    No community tests yet.
+                  <div className="text-center p-4 border border-dashed border-slate-800 rounded-xl text-slate-600 text-[9px] sm:text-[10px] italic">
+                    Tests will appear here.
                   </div>
                 )}
               </div>
@@ -941,14 +957,14 @@ function PlaygroundView({
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-slate-950 rounded-2xl border border-emerald-500/20 p-8 shadow-2xl relative overflow-hidden"
+                className="bg-slate-950 rounded-2xl border border-emerald-500/20 p-6 sm:p-8 shadow-2xl relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
-                <h3 className="text-xs font-bold mb-4 flex items-center gap-2 text-emerald-400 uppercase tracking-widest">
-                  <CheckCircle2 className="w-4 h-4" />
+                <div className="absolute top-0 right-0 w-24 h-24 sm:w-32 sm:h-32 bg-emerald-500/10 blur-3xl rounded-full"></div>
+                <h3 className="text-[10px] sm:text-xs font-bold mb-3 sm:mb-4 flex items-center gap-2 text-emerald-400 uppercase tracking-widest">
+                  <CheckCircle2 className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
                   Terminal Result
                 </h3>
-                <div className="font-mono text-xl text-emerald-500/90 whitespace-pre-wrap break-all">
+                <div className="font-mono text-lg sm:text-xl text-emerald-500/90 whitespace-pre-wrap break-all">
                   {result.output}
                 </div>
               </motion.div>
@@ -957,48 +973,46 @@ function PlaygroundView({
         </div>
       </div>
 
-      <div className="w-[440px] bg-slate-900 border-l border-slate-800 flex flex-col">
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between shrink-0">
-          <h3 className="font-bold flex items-center gap-2 text-slate-200">
-            <RefreshCw className={`w-4 h-4 text-cyan-500 ${isAutoPlaying ? 'animate-spin' : ''}`} />
-            Debugger Trace
-          </h3>
+      {/* Trace Panel (Right Side Desktop / Bottom Mobile) */}
+      <div className="flex-1 lg:max-w-sm border-t lg:border-t-0 lg:border-l border-slate-800 bg-slate-900/10 backdrop-blur min-h-[300px] lg:min-h-0 flex flex-col">
+        <div className="p-4 sm:p-6 border-b border-slate-800 bg-slate-900/30 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2">
+            <RefreshCw className={`w-3.5 sm:w-4 h-3.5 sm:h-4 text-cyan-500 ${isAutoPlaying ? 'animate-spin' : ''}`} />
+            <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-slate-200">Execution Trace</span>
+          </div>
           {result && (
-            <div className="flex bg-slate-800 rounded-lg p-1">
+            <div className="flex gap-2">
               <button 
                 onClick={() => setIsAutoPlaying(!isAutoPlaying)}
-                className={`text-[10px] font-bold px-3 py-1 rounded transition-colors ${
-                  isAutoPlaying 
-                    ? "bg-amber-500 text-slate-950"
-                    : "text-slate-400 hover:bg-slate-700"
-                }`}
+                className={`text-[9px] sm:text-[10px] font-black uppercase tracking-widest px-2 sm:px-3 py-1 rounded transition-all ${isAutoPlaying ? 'bg-cyan-500 text-slate-950' : 'bg-slate-800 text-slate-400'}`}
               >
-                {isAutoPlaying ? "PAUSE" : "AUTO"}
+                {isAutoPlaying ? 'Pause' : 'Auto'}
               </button>
-              <div className="w-px bg-slate-700 mx-1"></div>
-              <button 
-                disabled={currentStep <= 0}
-                onClick={() => setCurrentStep(prev => prev - 1)}
-                className="px-2 disabled:opacity-30 hover:bg-slate-700 rounded transition-colors"
-              >
-                <ChevronRight className="w-4 h-4 rotate-180" />
-              </button>
-              <button 
-                disabled={currentStep >= result.trace.length - 1}
-                onClick={() => setCurrentStep(prev => prev + 1)}
-                className="px-2 disabled:opacity-30 hover:bg-slate-700 rounded transition-colors"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
+              <div className="flex bg-slate-800/50 rounded-lg overflow-hidden border border-slate-700/50">
+                <button 
+                  disabled={currentStep <= 0}
+                  onClick={() => setCurrentStep(prev => prev - 1)}
+                  className="p-1 sm:p-1.5 disabled:opacity-30 hover:bg-slate-700 transition-colors"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                </button>
+                <button 
+                  disabled={currentStep >= result.trace.length - 1}
+                  onClick={() => setCurrentStep(prev => prev + 1)}
+                  className="p-1 sm:p-1.5 disabled:opacity-30 hover:bg-slate-700 transition-colors"
+                >
+                  <ChevronRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           )}
         </div>
         
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 sm:p-6 space-y-4">
           {!result ? (
-            <div className="flex flex-col items-center justify-center h-full text-slate-600 p-12 text-center">
-              <Terminal className="w-12 h-12 mb-4 opacity-20" />
-              <p className="text-xs font-medium uppercase tracking-widest leading-loose">Waiting for execution context...</p>
+            <div className="flex flex-col items-center justify-center h-full text-slate-600 p-8 text-center">
+              <Terminal className="w-8 h-8 mb-4 opacity-10" />
+              <p className="text-[10px] font-bold uppercase tracking-widest leading-loose">Waiting for execution...</p>
             </div>
           ) : (
             result.trace.slice(0, currentStep + 1).map((step, i) => (
@@ -1006,15 +1020,15 @@ function PlaygroundView({
                 key={i}
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className={`p-4 rounded-xl border transition-all ${
+                className={`p-3 sm:p-4 rounded-xl border transition-all ${
                   i === currentStep 
                     ? "bg-cyan-500/10 border-cyan-500/30 text-white shadow-lg" 
-                    : "bg-slate-950/50 border-transparent text-slate-600 scale-[0.98] opacity-40"
+                    : "bg-slate-950/20 border-transparent text-slate-600 scale-[0.98] opacity-50"
                 }`}
               >
-                <div className="flex justify-between items-center mb-2">
-                   <span className="text-[9px] font-black text-cyan-500/80 uppercase tracking-widest">STEP {i + 1}</span>
-                   <div className="flex gap-3 text-[9px] font-mono text-slate-500 uppercase">
+                <div className="flex justify-between items-start mb-2 gap-2">
+                   <span className="text-[9px] font-black text-cyan-500/80 uppercase tracking-widest shrink-0">STEP {i + 1}</span>
+                   <div className="flex flex-wrap justify-end gap-2 text-[8px] sm:text-[9px] font-mono text-slate-500 uppercase">
                       {Object.entries(step.vars).map(([k, v]) => (
                         <span key={k} className="flex gap-1">
                           <span>{k}:</span>
@@ -1023,7 +1037,7 @@ function PlaygroundView({
                       ))}
                    </div>
                 </div>
-                <p className="text-xs leading-relaxed font-medium">{step.description}</p>
+                <p className="text-[10px] sm:text-xs leading-relaxed font-medium">{step.description}</p>
               </motion.div>
             ))
           )}
